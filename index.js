@@ -1,16 +1,15 @@
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const { Configuration, OpenAIApi } = require("openai");
+const OpenAI = require("openai");
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-const configuration = new Configuration({
-  apiKey: "TVŮJ_API_KLÍČ", // <-- sem vlož svůj klíč
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
-const openai = new OpenAIApi(configuration);
 
 app.post("/api/respond", async (req, res) => {
   const userMessage = req.body.message;
@@ -26,17 +25,17 @@ Kamarád:
   `;
 
   try {
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [
         { role: "system", content: "Jsi empatický kamarád." },
         { role: "user", content: prompt }
       ],
       temperature: 0.8,
-      max_tokens: 300,
+      max_tokens: 300
     });
 
-    res.json({ response: completion.data.choices[0].message.content });
+    res.json({ response: completion.choices[0].message.content });
   } catch (error) {
     console.error(error);
     res.status(500).send("Něco se pokazilo.");
